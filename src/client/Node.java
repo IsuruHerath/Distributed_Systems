@@ -27,7 +27,7 @@ public class Node {
 		MY_HOST		= myHost;
 		MY_PORT		= myPort;
 		USER_NAME	= username;
-		server = new NodeService(MY_PORT);
+		server = new NodeService(MY_PORT,this);
 		server.start();
 	}
 	
@@ -86,7 +86,6 @@ public class Node {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
 	        out.println(Requests.getJoinRequest(MY_HOST, MY_PORT));
-	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
 	        System.out.println(response);
@@ -99,9 +98,9 @@ public class Node {
 	}
 	
 	//leave the System
-	public void leave(String host,int ip){
+	public void leave(String host,int port){
 		try {
-			Socket socket = new Socket(host,ip);
+			Socket socket = new Socket(host,port);
 			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
 			OutputStream outToServer = socket.getOutputStream();
 			PrintWriter out = new PrintWriter(outToServer);
@@ -120,8 +119,8 @@ public class Node {
 		
 	}
 	
-	//leave the System
-	public void search(String filename){
+	//search for a filename
+	public void search(String filename,int hops){
 		try {
 			Socket socket = new Socket(SERVER_HOST,SERVER_PORT);
 			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
@@ -129,7 +128,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.print(Requests.getSearchRequest(MY_HOST, MY_PORT, filename, 1));
+	        out.print(Requests.getSearchRequest(MY_HOST, MY_PORT, filename, hops));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
@@ -140,6 +139,19 @@ public class Node {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public String search(String fileName){
+		//TODO seraching
+		return "result";
+	}
+	
+	public void removeNodeFromRountingTable(String host,int port){
+		//TODO remove host:ip from routing table
+	}
+	
+	public void addNodeToRoutingTable(String host,int port){
+		//TODO add host:ip to routing table
 	}
 	
 }

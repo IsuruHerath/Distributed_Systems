@@ -8,8 +8,10 @@ public class NodeService extends Thread{
 	
 	private int port;
 	private ServerSocket server;
-	public NodeService(int port){
+	private Node node;
+	public NodeService(int port, Node node){
 		this.port = port;
+		this.node = node;
 	}
 	
 	public void run(){
@@ -18,7 +20,7 @@ public class NodeService extends Thread{
 			while(true){
 				Socket socket = server.accept();
 				System.out.println("Got a connection. Now serving...");
-				NodeServiceSession session = new NodeServiceSession(socket);
+				NodeServiceSession session = new NodeServiceSession(socket,node);
 				session.start();
 			}
 		} catch (IOException e) {
