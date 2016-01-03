@@ -17,17 +17,21 @@ public class Node {
 	private String MY_HOST;
 	private int MY_PORT;
 	private String USER_NAME;
+	private NodeService server;
 	
 	//constructor
 	public Node(String host,int port,String myHost,int myPort,String username){
 		SERVER_HOST	= host;
 		SERVER_PORT	= port;
 		
-		MY_HOST		= host;
-		MY_PORT		= port;
+		MY_HOST		= myHost;
+		MY_PORT		= myPort;
 		USER_NAME	= username;
+		server = new NodeService(MY_PORT);
+		server.start();
 	}
 	
+	//register to the system
 	public void register(){
 		try {
 			Socket socket = new Socket(SERVER_HOST,SERVER_PORT);
@@ -36,16 +40,106 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.println(Requests.getRegisterMesage(MY_HOST, MY_PORT, USER_NAME));
+	        out.println(Requests.getRegisterRequest(MY_HOST, MY_PORT, USER_NAME));
+	        out.flush();
+	        response = reader.readLine();
+	        //TODO after selecting neigbours
+	        //join("",0);
+	        System.out.println(response);
+	        socket.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}
+	
+	//unregister from the system
+	public void unregister(){
+		try {
+			Socket socket = new Socket(SERVER_HOST,SERVER_PORT);
+			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
+			OutputStream outToServer = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outToServer);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String response = "";
+	        out.println(Requests.getUnregisterRequest(MY_HOST, MY_PORT, USER_NAME));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
 	        System.out.println(response);
 	        socket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 		
 	}
+	
+	//join with the nodes
+	private void join(String host,int port){
+		try {
+			Socket socket = new Socket(host,port);
+			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
+			OutputStream outToServer = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outToServer);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String response = "";
+	        out.println(Requests.getJoinRequest(MY_HOST, MY_PORT));
+	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
+	        out.flush();
+	        response = reader.readLine();
+	        System.out.println(response);
+	        socket.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}
+	
+	//leave the System
+	public void leave(String host,int ip){
+		try {
+			Socket socket = new Socket(host,ip);
+			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
+			OutputStream outToServer = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outToServer);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String response = "";
+	        out.println(Requests.getLeaveRequest(MY_HOST, MY_PORT));
+	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
+	        out.flush();
+	        response = reader.readLine();
+	        System.out.println(response);
+	        socket.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}
+	
+	//leave the System
+	public void search(String filename){
+		try {
+			Socket socket = new Socket(SERVER_HOST,SERVER_PORT);
+			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
+			OutputStream outToServer = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outToServer);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String response = "";
+	        out.println(Requests.getSearchRequest(MY_HOST, MY_PORT, filename, 1));
+	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
+	        out.flush();
+	        response = reader.readLine();
+	        System.out.println(response);
+	        socket.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}
+	
 }
