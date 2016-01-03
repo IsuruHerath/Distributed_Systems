@@ -40,7 +40,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.println(Requests.getRegisterRequest(MY_HOST, MY_PORT, USER_NAME));
+	        out.print(Requests.getRegisterRequest(MY_HOST, MY_PORT, USER_NAME));
 	        out.flush();
 	        response = reader.readLine();
 	        //TODO after selecting neigbours
@@ -63,7 +63,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.println(Requests.getUnregisterRequest(MY_HOST, MY_PORT, USER_NAME));
+	        out.print(Requests.getUnregisterRequest(MY_HOST, MY_PORT, USER_NAME));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
@@ -129,7 +129,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.println(Requests.getSearchRequest(MY_HOST, MY_PORT, filename, 1));
+	        out.print(Requests.getSearchRequest(MY_HOST, MY_PORT, filename, 1));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
