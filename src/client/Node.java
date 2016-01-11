@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Hashtable;
 
 import Utils.Messages;
 
@@ -22,17 +23,18 @@ public class Node {
 	private int MY_PORT;
 	private String HOST_NAME;
 	private NodeService server;
+	private Hashtable<String, Integer> routingTable;
 	
 	//constructor
 	public Node(String ip,int port,String myip,int myPort,String hostname) throws SocketException{
 		SERVER_IP	= ip;
-		SERVER_PORT	= port;
-		
+		SERVER_PORT	= port;		
 		MY_IP		= myip;
 		MY_PORT		= myPort;
 		HOST_NAME	= hostname;
 		server = new NodeService(MY_PORT,this);
 		server.start();
+		routingTable=new Hashtable<String, Integer>();
 	}
 	
 	//register to the system
@@ -134,8 +136,13 @@ public class Node {
 		//TODO remove host:ip from routing table
 	}
 	
-	public void addNodeToRoutingTable(String ip,int port){
-		//TODO add host:ip to routing table
+	public boolean addNodeToRoutingTable(String ip,int port){
+		setRountingTable(ip,port);
+		return true;
+	}
+	
+	public void setRountingTable(String ip,int port){
+		routingTable.put(ip, port);
 	}
 	
 }
