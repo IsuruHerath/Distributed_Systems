@@ -148,14 +148,37 @@ public class Node {
 		return "result";
 	}
 	
-	public void removeNodeFromRountingTable(String ip,int port){
-		//TODO remove host:ip from routing table
+	
+	public boolean removeNodeFromRountingTable(String ip,int port){
+		
+		String str=ip+" "+port;
+		if(routingTable.contains(str)){
+			routingTable.remove(str);
+			return true;
+		}
+		
+		else{
+			return false;
+		}
+		
 	}
 	
-	public boolean setRountingTable(String ip,int port){
+	public boolean addNodeToRoutingTable(String ip,int port){
+		
+		
 		String str=ip+" "+port;
-		routingTable.add(str);
-		return true;
+		
+		if(!routingTable.contains(str)){
+			routingTable.add(str);
+			return true;
+		}
+		
+		else{
+			return false;
+		}
 	}
+	
+	
 	
 }
+

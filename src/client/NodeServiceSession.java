@@ -44,7 +44,19 @@ public class NodeServiceSession extends Thread{
 			
 			String host	= s[2];
 			int port	= Integer.parseInt(s[3]);
-			node.removeNodeFromRountingTable(host, port);
+			boolean response=node.removeNodeFromRountingTable(host, port);
+			
+			int value;
+			
+			if(response==true){
+				value=0;
+				}
+			
+			else{
+				value=9999;				
+			}
+			
+			node.respondLeave(host,port,value);
 		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.REGISTER_OK)){}
 		else if (operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){}
