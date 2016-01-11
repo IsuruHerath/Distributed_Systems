@@ -107,6 +107,10 @@ public class Node {
 				
 				String host	= s[2];
 				int port	= Integer.parseInt(s[3]);
+				for(String data:routingTable){
+					String str[] = data.split(" ");
+					sendLeave(str[0], Integer.parseInt(str[1]));
+				}
 				int value;
 			}
 		} catch (IOException e) {
