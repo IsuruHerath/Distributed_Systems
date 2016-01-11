@@ -19,17 +19,17 @@ public class Node {
 	
 	private String MY_IP;
 	private int MY_PORT;
-	private String USER_NAME;
+	private String HOST_NAME;
 	private NodeService server;
 	
 	//constructor
-	public Node(String ip,int port,String myip,int myPort,String username){
+	public Node(String ip,int port,String myip,int myPort,String hostname){
 		SERVER_IP	= ip;
 		SERVER_PORT	= port;
 		
 		MY_IP		= myip;
 		MY_PORT		= myPort;
-		USER_NAME	= username;
+		HOST_NAME	= hostname;
 		server = new NodeService(MY_PORT,this);
 		server.start();
 	}
@@ -43,7 +43,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.print(Messages.getRegisterRequest(MY_IP, MY_PORT, USER_NAME));
+	        out.print(Messages.getRegisterRequest(MY_IP, MY_PORT, HOST_NAME));
 	        out.flush();
 	        response = reader.readLine();
 	        //TODO after selecting neigbours
@@ -66,7 +66,7 @@ public class Node {
 			PrintWriter out = new PrintWriter(outToServer);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String response = "";
-	        out.print(Messages.getUnregisterRequest(MY_IP, MY_PORT, USER_NAME));
+	        out.print(Messages.getUnregisterRequest(MY_IP, MY_PORT, HOST_NAME));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
 	        response = reader.readLine();
@@ -97,54 +97,21 @@ public class Node {
 	}
 	
 	//join with the nodes
-	private void join(String ip,int port){
+	private void sendJoin(String ip,int port){
 		massageUDP(Messages.getJoinRequest(MY_IP, MY_PORT),ip,port);
 	}
 	
 	//leave the System
-	public void leave(String host,int port){
-		try {
-			Socket socket = new Socket(host,port);
-			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
-			OutputStream outToServer = socket.getOutputStream();
-			PrintWriter out = new PrintWriter(outToServer);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String response = "";
-	        out.println(Messages.getLeaveRequest(MY_IP, MY_PORT));
-	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
-	        out.flush();
-	        response = reader.readLine();
-	        System.out.println(response);
-	        socket.close();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-		
+	public void sendLeave(String ip,int port){
+		massageUDP(Messages.getLeaveRequest(MY_IP, MY_PORT),ip,port);
+	}
+	
+	//send the search request to specific node
+	public void sendSearch(String filename,int hops,String ip,int port){
+		massageUDP(Messages.getSearchRequest(MY_IP, MY_PORT, filename, hops),ip,port);
 	}
 	
 	//search for a filename
-	public void search(String filename,int hops){
-		try {
-			Socket socket = new Socket(SERVER_IP,SERVER_PORT);
-			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
-			OutputStream outToServer = socket.getOutputStream();
-			PrintWriter out = new PrintWriter(outToServer);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String response = "";
-	        out.print(Messages.getSearchRequest(MY_IP, MY_PORT, filename, hops));
-	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
-	        out.flush();
-	        response = reader.readLine();
-	        System.out.println(response);
-	        socket.close();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-		
-	}
-	
 	public String search(String fileName){
 		//TODO seraching
 		return "result";

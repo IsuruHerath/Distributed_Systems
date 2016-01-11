@@ -11,7 +11,7 @@ public class Main {
 		Node n2 = new Node(SERVER_HOST,SERVER_PORT,"127.0.0.1",7781,"node2");
 		n1.register();
 		n2.register();
-		n1.leave("127.0.0.1", 7781);
+		n1.sendLeave("127.0.0.1", 7781);
 	}
 
 }
