@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import Utils.Messages;
 
@@ -23,7 +24,7 @@ public class Node {
 	private int MY_PORT;
 	private String HOST_NAME;
 	private NodeService server;
-	private Hashtable<String, Integer> routingTable;
+	private Vector<String> routingTable;
 	
 	//constructor
 	public Node(String ip,int port,String myip,int myPort,String hostname) throws SocketException{
@@ -34,7 +35,7 @@ public class Node {
 		HOST_NAME	= hostname;
 		server = new NodeService(MY_PORT,this);
 		server.start();
-		routingTable=new Hashtable<String, Integer>();
+		routingTable=new Vector<String>();
 	}
 	
 	//register to the system
@@ -44,15 +45,21 @@ public class Node {
 			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
 			OutputStream outToServer = socket.getOutputStream();
 			PrintWriter out = new PrintWriter(outToServer);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String response = "";
 	        out.print(Messages.getRegisterRequest(MY_IP, MY_PORT, HOST_NAME));
 	        out.flush();
-	        response = reader.readLine();
-	        //TODO after selecting neigbours
-	        //join("",0);
-	        System.out.println(response);
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String responce = "";
+			responce = reader.readLine();
 	        socket.close();
+	        System.out.println(responce);
+	        String[] s = responce.split(" ");
+	        String operation = s[1];
+			
+			if(operation.equalsIgnoreCase(ClientProtocol.REGISTER_OK)){				
+				String host	= s[2];
+				int port	= Integer.parseInt(s[3]);
+				int value;
+			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
@@ -67,14 +74,23 @@ public class Node {
 			System.out.println("Just connected to "+ socket.getRemoteSocketAddress());
 			OutputStream outToServer = socket.getOutputStream();
 			PrintWriter out = new PrintWriter(outToServer);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String response = "";
 	        out.print(Messages.getUnregisterRequest(MY_IP, MY_PORT, HOST_NAME));
 	        //out.println(Requests.getRegisterMesage("129.82.123.45", 5001, "1234abcd"));
 	        out.flush();
-	        response = reader.readLine();
-	        System.out.println(response);
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String responce = "";
+	        responce = reader.readLine();
 	        socket.close();
+	        System.out.println(responce);
+	        String[] s = responce.split(" ");
+	        String operation = s[1];
+			
+			if(operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){
+				
+				String host	= s[2];
+				int port	= Integer.parseInt(s[3]);
+				int value;
+			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
@@ -136,13 +152,10 @@ public class Node {
 		//TODO remove host:ip from routing table
 	}
 	
-	public boolean addNodeToRoutingTable(String ip,int port){
-		setRountingTable(ip,port);
+	public boolean setRountingTable(String ip,int port){
+		String str=ip+" "+port;
+		routingTable.add(str);
 		return true;
-	}
-	
-	public void setRountingTable(String ip,int port){
-		routingTable.put(ip, port);
 	}
 	
 }
