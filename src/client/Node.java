@@ -105,8 +105,6 @@ public class Node {
 			
 			if(operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){
 				
-				String host	= s[2];
-				int port	= Integer.parseInt(s[3]);
 				for(String data:routingTable){
 					String str[] = data.split(" ");
 					sendLeave(str[0], Integer.parseInt(str[1]));
