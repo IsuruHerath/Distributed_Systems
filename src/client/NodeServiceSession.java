@@ -21,25 +21,23 @@ public class NodeServiceSession extends Thread{
 				
 		if(operation.equalsIgnoreCase(ClientProtocol.JOIN)){
 			
-			String host	= s[2];
-			int port	= Integer.parseInt(s[3]);
-			boolean response=node.addNodeToRoutingTable(host, port);
+			String host			= s[2];
+			int port			= Integer.parseInt(s[3]);
+			boolean response 	= node.addNodeToRoutingTable(host, port);
 			int value;
 			
 			if(response==true){
-				value=0;
-				}
-			
-			else{
-				value=9999;				
+				value	= 0;
+			}else{
+				value	= 9999;				
 			}
 			node.respondJoin(host,port,value);
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.SEARCH)){
-			String host	= s[2];
-			int port	= Integer.parseInt(s[3]);
+			String host		= s[2];
+			int port		= Integer.parseInt(s[3]);
 			String filename = s[4];
-			int hops = Integer.parseInt(s[5]);
+			int hops 		= Integer.parseInt(s[5]);
 			if(hops > 0){
 				Vector<String> table = node.getRoutingTable();
 				for(String entry : table){
@@ -47,24 +45,22 @@ public class NodeServiceSession extends Thread{
 					node.massageUDP(Messages.getSearchRequest(host, port, filename, hops-1),data[0],Integer.parseInt(data[1]));
 				}
 			}
-			String results = node.search(filename);
-			int fileCount = results.split(" ").length;
+			String results	= node.search(filename);
+			int fileCount 	= results.split(" ").length;
 			node.respondSearch(host, port, fileCount, results, hops);
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.LEAVE)){
 			
-			String host	= s[2];
-			int port	= Integer.parseInt(s[3]);
-			boolean response=node.removeNodeFromRountingTable(host, port);
+			String host			= s[2];
+			int port			= Integer.parseInt(s[3]);
+			boolean response	= node.removeNodeFromRountingTable(host, port);
 			
 			int value;
 			
-			if(response==true){
-				value=0;
-				}
-			
-			else{
-				value=9999;				
+			if(response == true){
+				value	= 0;
+			}else{
+				value	= 9999;				
 			}
 			
 			node.respondLeave(host,port,value);
@@ -73,7 +69,16 @@ public class NodeServiceSession extends Thread{
 		else if (operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){}
 		else if (operation.equalsIgnoreCase(ClientProtocol.JOIN_OK)){}
 		else if (operation.equalsIgnoreCase(ClientProtocol.LEAVE_OK)){}
-		else if (operation.equalsIgnoreCase(ClientProtocol.SEARCH_OK)){}
+		else if (operation.equalsIgnoreCase(ClientProtocol.SEARCH_OK)){
+			int fileCount = Integer.parseInt(s[2]);
+			String ip	= s[3];
+			int port 	= Integer.parseInt(s[4]);
+			int hops 	= Integer.parseInt(s[5]);
+			
+			for(int i = 0;i<fileCount;i++){
+				node.addFile(s[i+6]);
+			}
+		}
 				
 		else{
 			System.out.println("Error");
