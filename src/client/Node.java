@@ -9,6 +9,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import Utils.Messages;
 
@@ -23,7 +24,7 @@ public class Node {
 	private NodeService server;
 	
 	//constructor
-	public Node(String ip,int port,String myip,int myPort,String hostname){
+	public Node(String ip,int port,String myip,int myPort,String hostname) throws SocketException{
 		SERVER_IP	= ip;
 		SERVER_PORT	= port;
 		
@@ -109,6 +110,18 @@ public class Node {
 	//send the search request to specific node
 	public void sendSearch(String filename,int hops,String ip,int port){
 		massageUDP(Messages.getSearchRequest(MY_IP, MY_PORT, filename, hops),ip,port);
+	}
+	
+	public void respondLeave(String ip,int port,int value){
+		massageUDP(Messages.getLeaveRespond(value),ip,port);
+	}
+	
+	public void respondJoin(String ip,int port,int value){
+		massageUDP(Messages.getJoinRespond(value),ip,port);
+	}
+	
+	public void respondSearch(String ip,int port,int no_of_files, String filenames, int hops ){
+		massageUDP(Messages.getSearchRespond(MY_IP, MY_PORT, no_of_files, filenames, hops),ip,port);
 	}
 	
 	//search for a filename

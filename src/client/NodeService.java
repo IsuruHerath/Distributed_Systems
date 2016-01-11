@@ -3,7 +3,6 @@ package client;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Socket;
 import java.net.SocketException;
 
 public class NodeService extends Thread{
@@ -21,13 +20,16 @@ public class NodeService extends Thread{
 		while(true){
 			byte[] data = new byte[300];
 			DatagramPacket receivePacket =new DatagramPacket(data, data.length);
-			server.receive(receivePacket);
+			try {
+				server.receive(receivePacket);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			System.out.println("Got a connection. Now serving...");
 			String responce = new String(receivePacket.getData());
 			NodeServiceSession session = new NodeServiceSession(responce,node);
 			session.start();
 		}
-		
-		System.out.println("Exiting from Node Service");
 	}
 }
