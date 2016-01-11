@@ -1,16 +1,20 @@
 package client;
 
+import java.util.Vector;
+
+import Utils.Messages;
+
 
 public class NodeServiceSession extends Thread{
-	private String responce;
+	private String response;
 	private Node node;
 	public NodeServiceSession(String receive,Node node){
-		this.responce	= receive;
+		this.response	= receive;
 		this.node		= node;
 	}
 	
 	public void run(){
-		String[] s = responce.split(" ");
+		String[] s = response.split(" ");
 		//TODO validate request
 		System.out.println(s[1]);
 		String operation = s[1];
@@ -32,13 +36,20 @@ public class NodeServiceSession extends Thread{
 			node.respondJoin(host,port,value);
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.SEARCH)){
+			String host	= s[2];
+			int port	= Integer.parseInt(s[3]);
 			String filename = s[4];
 			int hops = Integer.parseInt(s[5]);
-			String results = node.search(filename);
 			if(hops > 0){
-				//To Do - send search request to all naubours if the file is not in the node.
-				//node.sendSearch(filename, hops-1,routingip,routingport);
+				Vector<String> table = node.getRoutingTable();
+				for(String entry : table){
+					String data[] = entry.split(" ");
+					node.massageUDP(Messages.getSearchRequest(host, port, filename, hops-1),data[0],Integer.parseInt(data[1]));
+				}
 			}
+			String results = node.search(filename);
+			int fileCount = results.split(" ").length;
+			node.respondSearch(host, port, fileCount, results, hops);
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.LEAVE)){
 			

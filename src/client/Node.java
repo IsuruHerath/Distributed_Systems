@@ -10,7 +10,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import Utils.Messages;
@@ -25,6 +27,7 @@ public class Node {
 	private String HOST_NAME;
 	private NodeService server;
 	private Vector<String> routingTable;
+	private HashSet<String> fileList = new HashSet<String>();
 	
 	//constructor
 	public Node(String ip,int port,String myip,int myPort,String hostname) throws SocketException{
@@ -144,8 +147,23 @@ public class Node {
 	
 	//search for a filename
 	public String search(String fileName){
-		//TODO seraching
-		return "result";
+		String results = null;
+		Iterator<String> itr = fileList.iterator();
+		String s;
+		while(itr.hasNext()){
+			s = itr.next();
+			if(s.contains(fileName)){
+				if(results == null){
+					results = fileName;
+				}else{
+					results = results + " " +fileName;
+				}
+			}
+		}
+		if(results == null){
+			results = "";
+		}
+		return results;
 	}
 	
 	
@@ -178,7 +196,13 @@ public class Node {
 		}
 	}
 	
+	public Vector<String> getRoutingTable(){
+		return routingTable;
+	}
 	
+	public void addFile(String filename){
+		fileList.add(filename);
+	}
 	
 }
 
