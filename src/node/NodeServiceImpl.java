@@ -15,21 +15,35 @@ public class NodeServiceImpl implements NodeService{
 	}
 	
 	@Override
-	public String join(String message) {
-		// TODO Auto-generated method stub
-		return "response";
+	public void join(String message) {
+		System.out.println(message);
+		node.processJoin(message);
 	}
 
 	@Override
-	public String leave(String message) {
+	public void leave(String message) {
 		// TODO Auto-generated method stub
-		return "response";
 	}
 
 	@Override
-	public String search(String message) {
+	public void search(String message) {
 		// TODO Auto-generated method stub
-		return "response";
+	}
+
+	@Override
+	public void joinOK(String message) {
+		System.out.println(message);
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void leaveOK(String message) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void searchOK(String message) {
+		// TODO Auto-generated method stub
 	}
 
 }
