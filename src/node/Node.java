@@ -34,6 +34,7 @@ public class Node {
 		private Publisher servicePublisher;
 		private Vector<String> routingTable;
 		private HashSet<String> fileList = new HashSet<String>();
+		private final static int MAX_HOPS = 3;
 		
 		//constructor
 		public Node(String ip,int port,String myip,String hostname) throws SocketException{
@@ -137,7 +138,14 @@ public class Node {
 			
 		}
 		
-		public void sendJoinRequest(String ip,int port){
+		public void searchFile(String filename){
+			for(String entry : routingTable){
+				String data[] = entry.split(" ");
+				sendSearchRequest(data[0],Integer.parseInt(data[1]),Messages.getSearchRequest(MY_IP, MY_PORT, filename, MAX_HOPS));
+			}
+		}
+		
+		private void sendJoinRequest(String ip,int port){
 			try{
 				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
 				QName qName 	= new QName("http://node/","NodeServiceImplService");
@@ -150,7 +158,7 @@ public class Node {
 			
 		}
 		
-		public void sendJoinResponse(String ip,int port,int value){
+		private void sendJoinResponse(String ip,int port,int value){
 			try{
 				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
 				QName qName 	= new QName("http://node/","NodeServiceImplService");
@@ -163,7 +171,7 @@ public class Node {
 			
 		}
 		
-		public void callLeave() throws MalformedURLException{
+		private void callLeave() throws MalformedURLException{
 			URL url 		= new URL("http://"+MY_IP+":"+MY_PORT+"/server?wsdl");
 			QName qName 	= new QName("http://node/","NodeServiceImplService");
 			Service service = Service.create(url, qName);
@@ -171,28 +179,40 @@ public class Node {
 			calService.leave("");
 		}
 		
-		public void callSearch() throws MalformedURLException{
-			URL url 		= new URL("http://"+MY_IP+":"+MY_PORT+"/server?wsdl");
-			QName qName 	= new QName("http://node/","NodeServiceImplService");
-			Service service = Service.create(url, qName);
-			NodeService calService = service.getPort(NodeService.class);
-			calService.search("");
+		private void sendSearchRequest(String ip,int port,String query){
+			try{
+				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
+				QName qName 	= new QName("http://node/","NodeServiceImplService");
+				Service service = Service.create(url, qName);
+				NodeService calService = service.getPort(NodeService.class);
+				calService.search(query);
+			}catch(MalformedURLException e){
+				System.out.println("Error : "+e.getMessage());
+			}
 		}
 		
-		public void respondLeave(String ip,int port,int value){
+		private void respondLeave(String ip,int port,int value){
 			//massageUDP(Messages.getLeaveRespond(value),ip,port);
 		}
 		
-		public String respondJoin(String ip,int port,int value){
+		private String respondJoin(String ip,int port,int value){
 			return Messages.getJoinRespond(value);
 		}
 		
-		public void respondSearch(String ip,int port,int no_of_files, String filenames, int hops ){
-			//massageUDP(Messages.getSearchRespond(MY_IP, MY_PORT, no_of_files, filenames, hops),ip,port);
+		private void sendSearchResponse(String ip,int port,int no_of_files, String filenames, int hops ){
+			try{
+				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
+				QName qName 	= new QName("http://node/","NodeServiceImplService");
+				Service service = Service.create(url, qName);
+				NodeService calService = service.getPort(NodeService.class);
+				calService.searchOK(Messages.getSearchRespond(MY_IP, MY_PORT, no_of_files, filenames, hops));
+			}catch(MalformedURLException e){
+				System.out.println("Error : "+e.getMessage());
+			}
 		}
 		
 		//search for a filename
-		public String search(String fileName){
+		private String search(String fileName){
 			String results = null;
 			Iterator<String> itr = fileList.iterator();
 			String s;
@@ -206,14 +226,11 @@ public class Node {
 					}
 				}
 			}
-			if(results == null){
-				results = "";
-			}
 			return results;
 		}
 		
 		
-		public boolean removeNodeFromRountingTable(String ip,int port){
+		private boolean removeNodeFromRountingTable(String ip,int port){
 			
 			String str=ip+" "+port;
 			if(routingTable.contains(str)){
@@ -227,22 +244,18 @@ public class Node {
 			
 		}
 		
-		public boolean addNodeToRoutingTable(String ip,int port){
-			
-			
+		private boolean addNodeToRoutingTable(String ip,int port){
 			String str = ip+" "+port;
-			
 			if(!routingTable.contains(str)){
 				routingTable.add(str);
 				return true;
 			}
-			
 			else{
 				return false;
 			}
 		}
 		
-		public Vector<String> getRoutingTable(){
+		private Vector<String> getRoutingTable(){
 			return routingTable;
 		}
 		
@@ -266,5 +279,43 @@ public class Node {
 				value	= 9999;				
 			}
 			sendJoinResponse(host,port,value);
+		}
+		
+		public void processSearch(String message){
+			String[] s = message.split(" ");
+			//TODO validate request
+			System.out.println(s[1]);
+			String operation = s[1];
+			String host		= s[2];
+			int port		= Integer.parseInt(s[3]);
+			String filename = s[4];
+			int hops 		= Integer.parseInt(s[5]);
+			if(hops > 0){
+				for(String entry : routingTable){
+					String data[] = entry.split(" ");
+					sendSearchRequest(data[0],Integer.parseInt(data[1]),Messages.getSearchRequest(host, port, filename, hops-1));
+				}
+			}
+			String results	= search(filename);
+			int fileCount 	= 0;
+			if(results != null){
+				fileCount 	= results.split(" ").length;
+			}
+			sendSearchResponse(host, port, fileCount, results, hops);
+		}
+		
+		public void processSearchOK(String message){
+			String[] s = message.split(" ");
+			//TODO validate request
+			System.out.println(s[1]);
+			String operation = s[1];
+			int fileCount = Integer.parseInt(s[2]);
+			String ip	= s[3];
+			int port 	= Integer.parseInt(s[4]);
+			int hops 	= Integer.parseInt(s[5]);
+			System.out.println(message);
+			for(int i = 0;i<fileCount;i++){
+				addFile(s[i+6]);
+			}
 		}
 }

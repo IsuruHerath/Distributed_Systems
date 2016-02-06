@@ -27,7 +27,8 @@ public class NodeServiceImpl implements NodeService{
 
 	@Override
 	public void search(String message) {
-		// TODO Auto-generated method stub
+		System.out.println(message);
+		node.processSearch(message);
 	}
 
 	@Override
@@ -38,11 +39,14 @@ public class NodeServiceImpl implements NodeService{
 
 	@Override
 	public void leaveOK(String message) {
+		System.out.println(message);
 		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void searchOK(String message) {
+		System.out.println(message);
+		node.processSearchOK(message);
 		// TODO Auto-generated method stub
 	}
 

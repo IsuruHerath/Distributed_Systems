@@ -15,6 +15,7 @@ public class Main {
 		n2.register();
 		Node n3 = new Node(SERVER_HOST,SERVER_PORT,"127.0.0.1","node3");
 		n3.register();
+		n3.searchFile("bot");
 		//Node n2 = new Node(SERVER_HOST,SERVER_PORT,"127.0.0.1",7781,"node2");
 		//n1.register();
 		//n2.register();
