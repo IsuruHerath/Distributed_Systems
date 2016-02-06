@@ -11,7 +11,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -74,9 +73,6 @@ public class Node {
 					addNodeToRoutingTable(s[2*host1+3], Integer.parseInt(s[2*host1+4]));
 					addNodeToRoutingTable(s[2*host2+3], Integer.parseInt(s[2*host2+4]));
 				}
-				String host	= s[2];
-				int port	= Integer.parseInt(s[3]);
-				int value;
 			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
@@ -105,10 +101,8 @@ public class Node {
 			
 			if(operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){
 				
-				for(String data:routingTable){
-					String str[] = data.split(" ");
-					sendLeave(str[0], Integer.parseInt(str[1]));
-				}
+				String host	= s[2];
+				int port	= Integer.parseInt(s[3]);
 				int value;
 			}
 		} catch (IOException e) {
