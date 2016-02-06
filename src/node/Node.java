@@ -1,6 +1,7 @@
 package node;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -14,6 +15,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.xml.namespace.QName;
@@ -145,7 +147,7 @@ public class Node {
 			}
 		}
 		
-		private void sendJoinRequest(String ip,int port){
+		public void sendJoinRequest(String ip,int port){
 			try{
 				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
 				QName qName 	= new QName("http://node/","NodeServiceImplService");
@@ -158,7 +160,7 @@ public class Node {
 			
 		}
 		
-		private void sendJoinResponse(String ip,int port,int value){
+		public void sendJoinResponse(String ip,int port,int value){
 			try{
 				URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
 				QName qName 	= new QName("http://node/","NodeServiceImplService");
@@ -171,12 +173,22 @@ public class Node {
 			
 		}
 		
-		private void callLeave() throws MalformedURLException{
-			URL url 		= new URL("http://"+MY_IP+":"+MY_PORT+"/server?wsdl");
+		public void sendLeaveRequest(String ip,int port) throws MalformedURLException{
+			URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
 			QName qName 	= new QName("http://node/","NodeServiceImplService");
 			Service service = Service.create(url, qName);
 			NodeService calService = service.getPort(NodeService.class);
-			calService.leave("");
+			calService.leave(Messages.getLeaveRequest(MY_IP,MY_PORT));
+		}
+		
+		public void sendLeaveResponse(String ip,int port,int value) throws MalformedURLException{
+			
+			URL url 		= new URL("http://"+ip+":"+port+"/server?wsdl");
+			QName qName 	= new QName("http://node/","NodeServiceImplService");
+			Service service = Service.create(url, qName);
+			NodeService calService = service.getPort(NodeService.class);
+			calService.leaveOK(Messages.getLeaveRespond(value));
+			
 		}
 		
 		private void sendSearchRequest(String ip,int port,String query){
@@ -191,12 +203,16 @@ public class Node {
 			}
 		}
 		
-		private void respondLeave(String ip,int port,int value){
+		public void respondLeave(String ip,int port,int value){
 			//massageUDP(Messages.getLeaveRespond(value),ip,port);
 		}
 		
-		private String respondJoin(String ip,int port,int value){
+		public String respondJoin(String ip,int port,int value){
 			return Messages.getJoinRespond(value);
+		}
+		
+		public void respondSearch(String ip,int port,int no_of_files, String filenames, int hops ){
+			//massageUDP(Messages.getSearchRespond(MY_IP, MY_PORT, no_of_files, filenames, hops),ip,port);
 		}
 		
 		private void sendSearchResponse(String ip,int port,int no_of_files, String filenames, int hops ){
@@ -211,26 +227,28 @@ public class Node {
 			}
 		}
 		
+		
 		//search for a filename
-		private String search(String fileName){
-			String results = null;
-			Iterator<String> itr = fileList.iterator();
-			String s;
-			while(itr.hasNext()){
-				s = itr.next();
-				if(s.contains(fileName)){
-					if(results == null){
-						results = fileName;
-					}else{
-						results = results + " " +fileName;
+				private String search(String fileName){
+					String results = null;
+					Iterator<String> itr = fileList.iterator();
+					String s;
+					while(itr.hasNext()){
+						s = itr.next();
+						if(s.contains(fileName)){
+							if(results == null){
+								results = fileName;
+							}else{
+								results = results + " " +fileName;
+							}
+						}
 					}
+					return results;
 				}
-			}
-			return results;
-		}
+				
 		
 		
-		private boolean removeNodeFromRountingTable(String ip,int port){
+		public boolean removeNodeFromRountingTable(String ip,int port){
 			
 			String str=ip+" "+port;
 			if(routingTable.contains(str)){
@@ -244,18 +262,22 @@ public class Node {
 			
 		}
 		
-		private boolean addNodeToRoutingTable(String ip,int port){
+		public boolean addNodeToRoutingTable(String ip,int port){
+			
+			
 			String str = ip+" "+port;
+			
 			if(!routingTable.contains(str)){
 				routingTable.add(str);
 				return true;
 			}
+			
 			else{
 				return false;
 			}
 		}
 		
-		private Vector<String> getRoutingTable(){
+		public Vector<String> getRoutingTable(){
 			return routingTable;
 		}
 		
@@ -279,6 +301,46 @@ public class Node {
 				value	= 9999;				
 			}
 			sendJoinResponse(host,port,value);
+		}
+		
+		public void leaveNode(String message) {
+			
+			
+			String[] s = message.split(" ");			
+			String ip			= s[2];
+			int port			= Integer.parseInt(s[3]);
+			boolean response=removeNodeFromRountingTable(ip,port);
+			
+			int value;
+			
+			if(response==true){
+				value=0;
+			}
+			else{
+				value=9999;
+			}
+			
+			try {
+				sendLeaveResponse(ip,port,value);
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		public void leaveOK(String message){
+			
+			String[] s = message.split(" ");
+			int value= Integer.parseInt(s[2]);
+			
+			if(value==0){
+				System.out.println("Successful");
+			}
+			else if (value==9999){
+				
+				System.out.println("Error while removing node from the routing table");
+			}
+			
 		}
 		
 		public void processSearch(String message){
@@ -318,8 +380,8 @@ public class Node {
 				addFile(s[i+6]);
 			}
 		}
-
-	public void selectRandomFiles(String path){
+		
+		public void selectRandomFiles(String path){
 			
 			int namesToRead = getRandomNumber(3, 6);
 			System.out.println("Value "+namesToRead);

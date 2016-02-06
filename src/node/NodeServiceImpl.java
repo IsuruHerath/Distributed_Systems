@@ -1,5 +1,7 @@
 package node;
 
+import java.net.MalformedURLException;
+
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
@@ -14,40 +16,41 @@ public class NodeServiceImpl implements NodeService{
 		this.node = node;
 	}
 	
-	@Override
+	
 	public void join(String message) {
 		System.out.println(message);
 		node.processJoin(message);
 	}
 
-	@Override
-	public void leave(String message) {
-		// TODO Auto-generated method stub
+	
+	public void leave(String message) {		
+		System.out.println(message);
+		node.leaveNode(message);
+		
 	}
 
-	@Override
+	
 	public void search(String message) {
 		System.out.println(message);
 		node.processSearch(message);
 	}
 
-	@Override
+	
 	public void joinOK(String message) {
 		System.out.println(message);
 		// TODO Auto-generated method stub
 	}
 
-	@Override
+	
 	public void leaveOK(String message) {
 		System.out.println(message);
-		// TODO Auto-generated method stub
+		node.leaveOK(message);
 	}
 
-	@Override
+	
 	public void searchOK(String message) {
 		System.out.println(message);
 		node.processSearchOK(message);
 		// TODO Auto-generated method stub
 	}
-
 }

@@ -11,4 +11,5 @@ public class ClientProtocol {
 	public static String JOIN_OK		= "JOINOK";
 	public static String LEAVE_OK		= "LEAVEOK";
 	public static String SEARCH_OK		= "SEROK";
+	public static String ERROR = "ERROR";
 }

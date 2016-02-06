@@ -61,9 +61,13 @@ public class Node {
 				int nodeCount = Integer.parseInt(s[2]);
 				if(nodeCount == 1){
 					addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
+					sendJoin(s[3], Integer.parseInt(s[4]));
 				}else if(nodeCount == 2){
 					addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
+					sendJoin(s[3], Integer.parseInt(s[4]));
 					addNodeToRoutingTable(s[5], Integer.parseInt(s[6]));
+					sendJoin(s[5], Integer.parseInt(s[6]));
+					
 				}else if(nodeCount > 2){
 					int host1 = (int)(Math.random()*nodeCount);
 					int host2 = (int)(Math.random()*nodeCount);
@@ -71,7 +75,9 @@ public class Node {
 						host2 = (int)(Math.random()*nodeCount);
 					}
 					addNodeToRoutingTable(s[2*host1+3], Integer.parseInt(s[2*host1+4]));
-					addNodeToRoutingTable(s[2*host2+3], Integer.parseInt(s[2*host2+4]));
+					sendJoin(s[2*host1+3], Integer.parseInt(s[2*host1+4]));
+					addNodeToRoutingTable(s[2*host2+3], Integer.parseInt(s[2*host2+4]));					
+					sendJoin(s[2*host2+3], Integer.parseInt(s[2*host2+4]));
 				}
 			}
 		} catch (IOException e) {
@@ -198,8 +204,7 @@ public class Node {
 		String str = ip+" "+port;
 		
 		if(!routingTable.contains(str)){
-			routingTable.add(str);
-			sendJoin(ip, port);
+			routingTable.add(str);			
 			return true;
 		}
 		

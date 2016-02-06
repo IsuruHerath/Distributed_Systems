@@ -65,12 +65,40 @@ public class NodeServiceSession extends Thread{
 			
 			node.respondLeave(host,port,value);
 		}
-		else if (operation.equalsIgnoreCase(ClientProtocol.REGISTER_OK)){}
-		else if (operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){}
-		else if (operation.equalsIgnoreCase(ClientProtocol.JOIN_OK)){}
-		else if (operation.equalsIgnoreCase(ClientProtocol.LEAVE_OK)){}
+		
+		
+		else if (operation.equalsIgnoreCase(ClientProtocol.JOIN_OK)){
+			
+			int value=Integer.parseInt(s[2]);
+			
+			if(value==0){
+				System.out.println("Successful");
+			}
+			
+			else{
+				System.out.println("Error while adding new node to routing table");
+			}
+		}
+		else if (operation.equalsIgnoreCase(ClientProtocol.LEAVE_OK)){
+			
+			int value=Integer.parseInt(s[2]);
+			
+			if(value==0){
+				System.out.println("Successful");
+			}
+			
+			else{
+				System.out.println("Error while removing node from the routing table");
+			}
+		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.SEARCH_OK)){
 			int fileCount = Integer.parseInt(s[2]);
+			
+			if(fileCount==0){			
+			System.out.println("No matching results. Searched key is not in key table");
+			}
+			
+			else if (fileCount>=1){
 			String ip	= s[3];
 			int port 	= Integer.parseInt(s[4]);
 			int hops 	= Integer.parseInt(s[5]);
@@ -78,8 +106,21 @@ public class NodeServiceSession extends Thread{
 			for(int i = 0;i<fileCount;i++){
 				node.addFile(s[i+6]);
 			}
+			}
+			
+			else if (fileCount==9998){
+				System.out.println("Some other error");
+			}
+			else if (fileCount==9999){
+				System.out.println("Failure due to node unreachable");
+			}
+			
 		}
-				
+		
+		else if (operation.equalsIgnoreCase(ClientProtocol.ERROR)){
+			
+			System.out.println("Error");			
+		}
 		else{
 			System.out.println("Error");
 		}
