@@ -318,4 +318,72 @@ public class Node {
 				addFile(s[i+6]);
 			}
 		}
+
+	public void selectRandomFiles(String path){
+			
+			int namesToRead = getRandomNumber(3, 6);
+			System.out.println("Value "+namesToRead);
+			
+			FileReader fr;
+			BufferedReader br;
+			HashSet<String> fileNames = new HashSet<String>();
+			try {
+				
+				int lineNumbers = 0;
+				int randomfileNumber = 0;
+				fr = new FileReader(path);
+				br =  new BufferedReader(fr);
+				String line = br.readLine();
+				
+				while(line != null){
+					line = br.readLine();
+					lineNumbers++;
+				}
+				//br.close();
+				int count = 0;
+				int setSize = 0;
+				
+				while((namesToRead - count) > 0){
+					randomfileNumber = getRandomNumber(1,lineNumbers);
+					int counter = 0;
+					setSize = fileNames.size();
+					fr = new FileReader(path);
+					br =  new BufferedReader(fr);
+					line = br.readLine();
+					//System.out.println(line);
+					while(line != null){
+						counter++;
+						if (counter == randomfileNumber){
+							fileNames.add(line);
+							//System.out.println(line);
+						}
+						line = br.readLine();
+					}
+					if((fileNames.size() - setSize) > 0){
+						count++;
+					}
+				}
+				
+				br.close();
+				fr.close();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Iterator iter = fileNames.iterator();
+			while (iter.hasNext()) {
+			    System.out.println(iter.next());
+			}
+		}
+		
+		private int getRandomNumber(int low, int high){
+			
+			int number = 0;
+			Random r =  new Random();
+			
+			number = r.nextInt(high-low) + low;
+			
+			return number;
+			
+		}
 }
