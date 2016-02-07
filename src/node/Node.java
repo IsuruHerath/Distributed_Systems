@@ -126,12 +126,30 @@ public class Node {
 		        System.out.println(responce);
 		        String[] s = responce.split(" ");
 		        String operation = s[1];
-				
+		        int value=Integer.parseInt(s[2]);
+		        
 				if(operation.equalsIgnoreCase(ClientProtocol.UNREGISTER_OK)){
 					
-					String host	= s[2];
-					int port	= Integer.parseInt(s[3]);
-					int value;
+						if(value==0){				
+						
+						
+						for(int i=0;i<routingTable.size();i++){
+							
+							
+							String[] str=routingTable.get(i).split(" ");
+							String ip=str[0];
+							int port=Integer.parseInt(str[1]);
+							sendLeaveRequest(ip,port);
+							
+							
+						}
+					}
+					
+					else if(value==9999)
+					{
+						System.out.println("Error while unregistering. IP and port may not be in the registry or command is incorrect.");
+					}
+					
 				}
 			} catch (IOException e) {
 				System.out.println(e.getMessage());
