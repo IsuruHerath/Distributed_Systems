@@ -5,7 +5,7 @@ import client.ClientProtocol;
 public class Messages {
 	
 	private static String getRequest(String type, String data){
-		String message = " "+type+" "+data;
+		String message = " "+(type+" "+data).trim();
 		message = String.format("%04d", message.length()+4)+message;
 		//System.out.println(message);
 		return message;

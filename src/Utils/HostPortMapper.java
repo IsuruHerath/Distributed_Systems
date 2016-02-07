@@ -1,5 +1,9 @@
 package Utils;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class HostPortMapper {
@@ -18,5 +22,22 @@ public class HostPortMapper {
 		}
 		mapper.put(nodeServer, portCount+1);
 		return STARTING_PORT + portCount;
+	}
+	public static String getIP(){
+		String nodeIp = "127.0.0.1";
+		try{
+			for (NetworkInterface ni :	Collections.list(NetworkInterface.getNetworkInterfaces())) {
+				if(ni.getName().equalsIgnoreCase("wlan0")){
+					for (InetAddress address : Collections.list(ni.getInetAddresses())) {
+						if (address instanceof Inet4Address) {
+							nodeIp = address.toString().substring(1);
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+	
+		}
+		return nodeIp;
 	}
 }
