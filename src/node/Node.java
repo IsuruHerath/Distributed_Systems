@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
@@ -33,7 +34,7 @@ public class Node {
 	private Publisher servicePublisher;
 	private Vector<String> routingTable;
 	private HashSet<String> fileList = new HashSet<String>();
-	private final static int MAX_HOPS = 0;
+	private final static int MAX_HOPS = 2;
 
 	// constructor
 	public Node(String ip, int port, int myport, String hostname)
@@ -47,7 +48,7 @@ public class Node {
 		servicePublisher.start();
 		while (servicePublisher.isAlive());
 		routingTable = new Vector<String>();
-		selectRandomFiles("/home/isuru/Desktop/DS/node/files.txt");
+		selectRandomFiles("/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/files.txt");
 	}
 
 	public String getIp() {
@@ -157,7 +158,7 @@ public class Node {
 			String data[] = entry.split(" ");
 			sendSearchRequest(data[0], Integer.parseInt(data[1]),
 					Messages.getSearchRequest(MY_IP, MY_PORT, filename,
-							MAX_HOPS));
+							1));
 		}
 	}
 
@@ -189,8 +190,8 @@ public class Node {
 	}
 
 	// search for a filename
-	private String search(String[] fileNameWords) {
-		String results = null;
+	private ArrayList<String> search(String[] fileNameWords) {
+		ArrayList<String> results = new ArrayList<String>();
 		Iterator<String> itr = fileList.iterator();
 		String s;
 		int fileNameWordCount = fileNameWords.length;
@@ -200,20 +201,18 @@ public class Node {
 			String[] words = s.split(" ");
 			length = words.length;
 			if(length>=fileNameWordCount){
-				boolean matched = true;
+				boolean matched = false;
 				for(int i=0;i<=(length-fileNameWordCount);i++){
+					matched = true;
 					for(int j=0;j<fileNameWordCount;j++){
 						if(!words[i].equalsIgnoreCase(fileNameWords[j])){
 							matched = false;
 							break;
 						}
 					}
-				}
-				if(matched){
-					if (results == null) {
-						results = s;
-					} else {
-						results = results + " " + s;
+					if(matched){
+						results.add(s);
+						break;
 					}
 				}
 			}
@@ -317,27 +316,31 @@ public class Node {
 		int port = Integer.parseInt(s[3]);
 		String filename = s[4];
 		int hops = Integer.parseInt(s[5]);
-		if (hops > 0) {
+		if (hops < MAX_HOPS) {
 			for (String entry : routingTable) {
 				String data[] = entry.split(" ");
 				sendSearchRequest(data[0], Integer.parseInt(data[1]),
 						Messages.getSearchRequest(host, port, filename,
-								hops - 1));
+								hops + 1));
 			}
 		}
-		int wordCount = s.length-4;
+		int wordCount = s.length-5;
 		String[] words = new String[wordCount];
 		for(int i=0;i<wordCount;i++){
 			words[i] = s[i+4];
 		}
-		String results = search(words);
-		int fileCount = 0;
-		if (results != null) {
-			fileCount = results.split(" ").length;
-		}else{
-			results = "";
+		ArrayList<String> results = search(words);
+		String files = "";
+		int fileCount = results.size();
+		for(int i=0;i<fileCount;i++){
+			if(i == 0){
+				files = results.get(i);
+			}else{
+				files = files + " " + results.get(i);
+			}
 		}
-		sendSearchResponse(host, port, fileCount, results, hops);
+		
+		sendSearchResponse(host, port, fileCount, files, hops);
 	}
 
 	public void processSearchOK(String message) {
