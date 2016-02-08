@@ -48,7 +48,7 @@ public class Node {
 		servicePublisher.start();
 		while (servicePublisher.isAlive());
 		routingTable = new Vector<String>();
-		selectRandomFiles("/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/files.txt");
+		selectRandomFiles("/home/yasima/Desktop/DS/files.txt");
 	}
 
 	public String getIp() {
@@ -389,7 +389,7 @@ public class Node {
 				// System.out.println(line);
 				while (line != null) {
 					counter++;
-					if (counter == randomfileNumber) {
+					if (counter == randomfileNumber && !fileList.contains(line)) {
 						fileList.add(line);
 						System.out.println(line);
 					}
