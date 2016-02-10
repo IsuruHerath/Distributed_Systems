@@ -22,6 +22,7 @@ import javax.xml.ws.Service;
 import client.ClientProtocol;
 import Utils.HostPortMapper;
 import Utils.Messages;
+import Utils.Util;
 
 public class Node {
 	// class variables
@@ -35,6 +36,7 @@ public class Node {
 	private Vector<String> routingTable;
 	private HashSet<String> fileList = new HashSet<String>();
 	private final static int MAX_HOPS = 2;
+	private HashSet<String> sessionQuries = new HashSet<>();
 
 	// constructor
 	public Node(String ip, int port, int myport, String hostname)
@@ -48,7 +50,7 @@ public class Node {
 		servicePublisher.start();
 		while (servicePublisher.isAlive());
 		routingTable = new Vector<String>();
-		selectRandomFiles("/home/yasima/Desktop/DS/files.txt");
+		selectRandomFiles("/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/files.txt");
 	}
 
 	public String getIp() {
@@ -60,6 +62,7 @@ public class Node {
 	}
 
 	public String getHostname() {
+		
 		return HOST_NAME;
 	}
 
@@ -156,8 +159,10 @@ public class Node {
 	public void searchFile(String filename) {
 		for (String entry : routingTable) {
 			String data[] = entry.split(" ");
+			String msgID = Util.getMessageID(MY_IP, MY_PORT);
+			sessionQuries.add(msgID);
 			sendSearchRequest(data[0], Integer.parseInt(data[1]),
-					Messages.getSearchRequest(MY_IP, MY_PORT, filename,
+					Messages.getSearchRequest(msgID,MY_IP, MY_PORT, filename,
 							1));
 		}
 	}
@@ -275,7 +280,7 @@ public class Node {
 		sendJoinResponse(host, port, value);
 	}
 
-	public void leaveNode(String message) {
+	public void processLeave(String message) {
 
 		String[] s = message.split(" ");
 		String ip = s[2];
@@ -292,7 +297,7 @@ public class Node {
 		sendLeaveResponse(ip, port, value);
 	}
 
-	public void leaveOK(String message) {
+	public void processLeaveOK(String message) {
 
 		String[] s = message.split(" ");
 		int value = Integer.parseInt(s[2]);
@@ -312,22 +317,32 @@ public class Node {
 		// TODO validate request
 		System.out.println(s[1]);
 		String operation = s[1];
-		String host = s[2];
-		int port = Integer.parseInt(s[3]);
-		String filename = s[4];
-		int hops = Integer.parseInt(s[5]);
+		String msgID = s[2];
+		if(sessionQuries.contains(msgID)){
+			return;
+		}
+		sessionQuries.add(msgID);
+		String host = s[3];
+		int port = Integer.parseInt(s[4]);
+		//String filename = s[5];
+		String msg = s[0];
+		for(int i=1;i<s.length-1;i++){
+			msg = msg + " "+s[i];
+		}
+		int hops = Integer.parseInt(s[s.length-1]);
+		msg = msg + " " + (hops + 1);
 		if (hops < MAX_HOPS) {
 			for (String entry : routingTable) {
 				String data[] = entry.split(" ");
 				sendSearchRequest(data[0], Integer.parseInt(data[1]),
-						Messages.getSearchRequest(host, port, filename,
-								hops + 1));
+						msg);
 			}
 		}
-		int wordCount = s.length-5;
+		int wordCount = s.length-6;
 		String[] words = new String[wordCount];
 		for(int i=0;i<wordCount;i++){
-			words[i] = s[i+4];
+			words[i] = s[i+5];
+			System.out.println(words[i]);
 		}
 		ArrayList<String> results = search(words);
 		String files = "";

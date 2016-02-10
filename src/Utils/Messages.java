@@ -31,8 +31,8 @@ public class Messages {
 		return getRequest(ClientProtocol.LEAVE,data);
 	}
 	
-	public static String getSearchRequest(String ip,int port, String filename, int hops){
-		String data = ip+" "+port+" "+filename+" "+hops;
+	public static String getSearchRequest(String msgId, String ip,int port, String filename, int hops){
+		String data = msgId+" "+ip+" "+port+" "+filename+" "+hops;
 		return getRequest(ClientProtocol.SEARCH,data);
 	}
 	

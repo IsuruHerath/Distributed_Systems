@@ -4,7 +4,7 @@ import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
 
-import Utils.Timer;
+import Utils.Util;
 
 @WebService(endpointInterface="node.NodeService")
 @SOAPBinding(style=Style.DOCUMENT)
@@ -18,43 +18,42 @@ public class NodeServiceImpl implements NodeService{
 	
 	
 	public void join(String message) {
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
 		node.processJoin(message);
 	}
 
 	
 	public void leave(String message) {
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
-		node.leaveNode(message);
+		node.processLeave(message);
 		
 	}
 
 	
 	public void search(String message) {
-
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
 		node.processSearch(message);
 	}
 
 	
 	public void joinOK(String message) {
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
 	}
 
 	
 	public void leaveOK(String message) {
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
-		node.leaveOK(message);
+		node.processLeaveOK(message);
 	}
 
 	
 	public void searchOK(String message) {
-		Timer.getTime();
+		Util.getTime();
 		System.out.println(message);
 		node.processSearchOK(message);
 	}
