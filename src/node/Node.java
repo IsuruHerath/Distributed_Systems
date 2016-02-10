@@ -36,7 +36,7 @@ public class Node {
 	private Vector<String> routingTable;
 	private HashSet<String> fileList = new HashSet<String>();
 	private final static int MAX_HOPS = 2;
-	private HashSet<String> sessionQuries = new HashSet<>();
+	private HashSet<String> sessionQuries = new HashSet<String>();
 
 	// constructor
 	public Node(String ip, int port, int myport, String hostname)
