@@ -12,11 +12,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Vector;
 
+import Utils.Consts;
 import Utils.HostPortMapper;
 import Utils.Messages;
 import Utils.Util;
@@ -32,19 +34,26 @@ public class Node {
 	private NodeService server;
 	private Vector<String> routingTable;
 	private HashSet<String> fileList = new HashSet<String>();
-	private final static int MAX_HOPS = 2;
+	private int MAX_HOPS;
 	private HashSet<String> sessionQuries = new HashSet<String>();
+	private int minHops = -1;
+	private int minLatency = -1;
+	private int messageForwarded = 0;
+	private int messageRecieved = 0;
+	private long beginTime = 0;
 	
 	//constructor
 	public Node(String ip,int port,int myPort,String hostname) throws SocketException{
 		SERVER_IP	= ip;
 		SERVER_PORT	= port;		
-		MY_IP		= HostPortMapper.getIP();
+		MY_IP		= Util.getProperty(Consts.NODE_HOST);
 		MY_PORT		= myPort;
 		HOST_NAME	= hostname;
+		MAX_HOPS	= Integer.parseInt(Util.getProperty(Consts.MAX_HOPS));
 		server = new NodeService(MY_PORT,this);
 		server.start();
 		routingTable=new Vector<String>();
+		selectRandomFiles(Util.getProperty(Consts.FILE_LIST_PATH));
 	}
 	
 	public String getIp() {
@@ -81,28 +90,40 @@ public class Node {
 
 			if (operation.equalsIgnoreCase(ClientProtocol.REGISTER_OK)) {
 				int nodeCount = Integer.parseInt(s[2]);
-				if (nodeCount == 1) {
-					sendJoinRequest(s[3], Integer.parseInt(s[4]));
-					addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
-				} else if (nodeCount == 2) {
-					sendJoinRequest(s[3], Integer.parseInt(s[4]));
-					addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
-					sendJoinRequest(s[6], Integer.parseInt(s[7]));
-					addNodeToRoutingTable(s[6], Integer.parseInt(s[7]));
-				} else if (nodeCount == 3) {
-					int host1 = (int) (Math.random() * nodeCount);
-					int host2 = (int) (Math.random() * nodeCount);
-					while (host1 == host2) {
-						host2 = (int) (Math.random() * nodeCount);
+				if(nodeCount > 0 && nodeCount < 9996){
+					if (nodeCount == 1) {
+						sendJoinRequest(s[3], Integer.parseInt(s[4]));
+						addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
+					} else if (nodeCount == 2) {
+						sendJoinRequest(s[3], Integer.parseInt(s[4]));
+						addNodeToRoutingTable(s[3], Integer.parseInt(s[4]));
+						sendJoinRequest(s[6], Integer.parseInt(s[7]));
+						addNodeToRoutingTable(s[6], Integer.parseInt(s[7]));
+					} else {
+						int host1 = (int) (Math.random() * nodeCount);
+						int host2 = (int) (Math.random() * nodeCount);
+						while (host1 == host2) {
+							host2 = (int) (Math.random() * nodeCount);
+						}
+						sendJoinRequest(s[3 * host1 + 3],
+								Integer.parseInt(s[3 * host1 + 4]));
+						addNodeToRoutingTable(s[3 * host1 + 3],
+								Integer.parseInt(s[3 * host1 + 4]));
+						sendJoinRequest(s[3 * host2 + 3],
+								Integer.parseInt(s[3 * host2 + 4]));
+						addNodeToRoutingTable(s[3 * host2 + 3],
+								Integer.parseInt(s[3 * host2 + 4]));
 					}
-					sendJoinRequest(s[3 * host1 + 3],
-							Integer.parseInt(s[3 * host1 + 4]));
-					addNodeToRoutingTable(s[3 * host1 + 3],
-							Integer.parseInt(s[3 * host1 + 4]));
-					sendJoinRequest(s[3 * host2 + 3],
-							Integer.parseInt(s[3 * host2 + 4]));
-					addNodeToRoutingTable(s[3 * host2 + 3],
-							Integer.parseInt(s[3 * host2 + 4]));
+				}else{
+					if(nodeCount == 9999){
+						System.out.println("failed, there is some error in the command");
+					}else if(nodeCount == 9998){
+						System.out.println("failed, already registered to you, unregister first");
+					}else if(nodeCount == 9997){
+						System.out.println("failed, registered to another user, try a different IP and port");
+					}else if(nodeCount == 9996){
+						System.out.println("failed, can’t register. BS full");
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -168,14 +189,29 @@ public class Node {
 	}
 	
 	public void searchFile(String filename) {
-		for (String entry : routingTable) {
-			String data[] = entry.split(" ");
-			String msgID = Util.getMessageID(MY_IP, MY_PORT);
-			sessionQuries.add(msgID);
-			sendSearchRequest(data[0], Integer.parseInt(data[1]),
-					Messages.getSearchRequest(msgID,MY_IP, MY_PORT, filename,
-							1));
-		}
+		//Util.getTime();
+				try {
+					
+					String msgID = Util.getMessageID(MY_IP, MY_PORT);
+					System.out.println(msgID);
+					beginTime = Util.getTime();
+					minHops = -1;
+					minLatency = -1;
+					for (String entry : routingTable) {
+						messageForwarded++;
+						String data[] = entry.split(" ");
+						sessionQuries.add(msgID);
+						sendSearchRequest(data[0], Integer.parseInt(data[1]),
+							Messages.getSearchRequest(msgID,MY_IP, MY_PORT, filename,
+									1));
+					}
+						
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//end of file
+				//print hops and latency
 	}
 
 	private void sendJoinRequest(String ip, int port) {
@@ -275,7 +311,6 @@ public class Node {
 	public void processJoin(String message) {
 		String[] s = message.split(" ");
 		// TODO validate request
-		System.out.println(s[1]);
 		String operation = s[1];
 		String host = s[2];
 		int port = Integer.parseInt(s[3]);
@@ -323,6 +358,7 @@ public class Node {
 	}
 
 	public void processSearch(String message) {
+		
 		String[] s = message.split(" ");
 		// TODO validate request
 		System.out.println(s[1]);
@@ -331,6 +367,7 @@ public class Node {
 		if(sessionQuries.contains(msgID)){
 			return;
 		}
+		messageRecieved++;
 		sessionQuries.add(msgID);
 		String host = s[3];
 		int port = Integer.parseInt(s[4]);
@@ -343,6 +380,7 @@ public class Node {
 		msg = msg + " " + (hops + 1);
 		if (hops < MAX_HOPS) {
 			for (String entry : routingTable) {
+				messageForwarded++;
 				String data[] = entry.split(" ");
 				sendSearchRequest(data[0], Integer.parseInt(data[1]),
 						msg);
@@ -352,7 +390,6 @@ public class Node {
 		String[] words = new String[wordCount];
 		for(int i=0;i<wordCount;i++){
 			words[i] = s[i+5];
-			System.out.println(words[i]);
 		}
 		ArrayList<String> results = search(words);
 		String files = "";
@@ -369,6 +406,7 @@ public class Node {
 	}
 
 	public void processSearchOK(String message) {
+		long recievedTime = Util.getTime();
 		String[] s = message.split(" ");
 		// TODO validate request
 		String operation = s[1];
@@ -376,6 +414,19 @@ public class Node {
 		String ip = s[3];
 		int port = Integer.parseInt(s[4]);
 		int hops = Integer.parseInt(s[5]);
+		if(fileCount > 0){
+			if(minHops == -1){
+				minHops = hops;
+			}else if(hops < minHops){
+				minHops = hops;
+			}
+			if(minLatency == -1){
+				minLatency = (int)(recievedTime - beginTime);
+			}else if((int)(recievedTime - beginTime) < minLatency){
+				minLatency = (int)(recievedTime - beginTime);
+			}
+		}
+		
 	}
 
 	public void selectRandomFiles(String path) {
@@ -438,6 +489,23 @@ public class Node {
 
 		return number;
 
+	}
+	
+	public void getFileList(){
+		for(String s : fileList){
+			System.out.println(s);
+		}
+	}
+	
+	public void getHostList(){
+		for(String s : routingTable){
+			System.out.println(s);
+		}
+	}
+	
+	public void getStat(){
+		System.out.println("Recieved Messages = "+messageRecieved);
+		System.out.println("Forwarded Messages = "+messageForwarded);
 	}
 	
 }

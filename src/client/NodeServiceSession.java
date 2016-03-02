@@ -3,6 +3,7 @@ package client;
 import java.util.Vector;
 
 import Utils.Messages;
+import Utils.Util;
 
 
 public class NodeServiceSession extends Thread{
@@ -14,22 +15,26 @@ public class NodeServiceSession extends Thread{
 	}
 	
 	public void run(){
-		String[] s = response.split(" ");
+		Util.getTime();
+		String[] s = response.trim().split(" ");
 		//TODO validate request
 		System.out.println(s[1]);
 		String operation = s[1];
 				
 		if(operation.equalsIgnoreCase(ClientProtocol.JOIN)){
-			
-			node.processJoin(response);
+			System.out.println(response.trim());
+			node.processJoin(response.trim());
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.SEARCH)){
-			node.processSearch(response);
+			System.out.println(response.trim());
+			node.processSearch(response.trim());
 		}
 		else if(operation.equalsIgnoreCase(ClientProtocol.LEAVE)){
-			node.processLeave(response);
+			System.out.println(response.trim());
+			node.processLeave(response.trim());
 		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.JOIN_OK)){
+			System.out.println(response.trim());
 			int value=Integer.parseInt(s[2]);
 			if(value == 0){
 				System.out.println("Successful");
@@ -39,10 +44,12 @@ public class NodeServiceSession extends Thread{
 			}
 		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.LEAVE_OK)){	
-			node.processLeaveOK(response);
+			System.out.println(response.trim());
+			node.processLeaveOK(response.trim());
 		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.SEARCH_OK)){
-			node.processSearchOK(response);
+			System.out.println(response.trim());
+			node.processSearchOK(response.trim());
 		}
 		else if (operation.equalsIgnoreCase(ClientProtocol.ERROR)){	
 			System.out.println("Error");			

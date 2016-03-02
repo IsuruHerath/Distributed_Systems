@@ -1,67 +1,61 @@
 package test;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Collections;
 import java.util.Scanner;
 
-import client.ClientProtocol;
 import node.Node;
+import Utils.Consts;
+import Utils.Util;
+import client.ClientProtocol;
 
 public class WebServerMain {
 
 	public static void main(String[] args) throws SocketException, MalformedURLException {
-		final String SERVER_HOST	= args[0];
-		final int SERVER_PORT		= Integer.parseInt(args[1]);
-		final int NODE_PORT			= Integer.parseInt(args[2]);
+		final String SERVER_HOST	= Util.getProperty(Consts.SERVER_HOST);
+		final int SERVER_PORT		= Integer.parseInt(Util.getProperty(Consts.SERVER_PORT));
+		final int NODE_PORT			= Integer.parseInt(Util.getProperty(Consts.NODE_PORT));
 		
-		Node node = new Node(SERVER_HOST,SERVER_PORT,NODE_PORT,args[3]);
+		Node node = new Node(SERVER_HOST,SERVER_PORT,NODE_PORT,Util.getProperty(Consts.USER_NAME));
 		node.register();
 		Scanner scan = new Scanner(System.in);
-		
+		System.out.println("Enter on the folowing commands.");
+		System.out.println("    1.register");
+		System.out.println("    2.unregister");
+		System.out.println("    3.search");
+		System.out.println("    4.files");
+		System.out.println("    5.hosts");
+		System.out.println("    6.exit");
+		System.out.println("    7.stat");
 		String command = scan.nextLine();
-		while(!command.equalsIgnoreCase("EXIT")){
-			if(command.equalsIgnoreCase(ClientProtocol.REGISTER)){
+		while(!command.equals("exit")){
+			if(command.equals("register")){
 				node.register();
-			}else if(command.equalsIgnoreCase(ClientProtocol.UNREGISTER)){
+			}else if(command.equals("unregister")){
 				node.unregister();
-			}else if(command.equalsIgnoreCase(ClientProtocol.SEARCH)){
+			}else if(command.equals("search")){
 				System.out.print("Insert file name : ");
 				String filename = scan.nextLine();
 				node.searchFile(filename);
+			}else if(command.equals("files")){
+				node.getFileList();
+			}else if(command.equals("hosts")){
+				node.getHostList();
+			}else if(command.equals("stat")){
+				node.getStat();
 			}else{
 				System.out.println("Wrong command. Try one of followings.");
-				System.out.println("    1.REG");
-				System.out.println("    2.UNREG");
-				System.out.println("    3.SER");
-				System.out.println("    4.EXIT");
+				System.out.println("    1.register");
+				System.out.println("    2.unregister");
+				System.out.println("    3.search");
+				System.out.println("    4.files");
+				System.out.println("    5.hosts");
+				System.out.println("    6.exit");
+				System.out.println("    7.stat");
 			}
 			command = scan.nextLine();
 		}
 		System.exit(0);
-		/*String path = "/home/isuru/a.txt";
-		try {
-			FileReader fr = new FileReader(path);
-			BufferedReader br = new BufferedReader(fr);
-			int[] count = new int[10];
-			String line = br.readLine();
-			while(line!=null){
-				count[Integer.parseInt(line.split(":")[1].trim())]++;
-				line = br.readLine();
-			}
-			for(int i=0;i<count.length;i++){
-				System.out.println(i+":"+count[i]);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
 	}
 
 }

@@ -1,0 +1,14 @@
+#home location of the application
+APPDIR=/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/
+
+#server configurations
+SERVER_HOST=127.0.0.1
+SERVER_PORT=8888
+
+#node configurations
+NODE_HOST=127.0.0.1
+NODE_PORT=7780
+USER_NAME=user1
+MAX_HOPS=10
+FILE_LIST_PATH=/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/files.txt
+QUERY_PATH=/home/isuru/Acacia/x10dt/workspace/Distributed_Systems/Queries.txt
